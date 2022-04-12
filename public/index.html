@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Streaming With Node</title>
+    <style>
+      body {
+        margin: 5% auto;
+        max-width: 100%;
+        background-color: rgb(14, 14, 14);
+        padding-top: 10%;
+        padding-left: 35%;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="/api/video" enctype="multipart/form-data" method="post">
+      <input type="file" name="file1" multiple="multiple" />
+      <input type="submit" value="Upload file" />
+    </form>
+  </body>
+</html>
