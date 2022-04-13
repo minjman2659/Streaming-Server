@@ -4,6 +4,6 @@ import { uploadVideo, getVideo } from './video.ctrl';
 const video = express.Router();
 
 video.post('/', uploadVideo);
-video.get('/', getVideo);
+video.get('/:videoName', getVideo);
 
 export default video;
