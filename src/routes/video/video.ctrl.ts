@@ -8,6 +8,7 @@ export const uploadVideo = (
   res: Response,
   next: NextFunction,
 ) => {
+  console.log('언제 오나?');
   videoUpload(req, res, err => {
     if (err) {
       next(err);
@@ -17,6 +18,7 @@ export const uploadVideo = (
       videoName: res.req.file.filename,
       videoPath: res.req.file.path,
     };
+    console.log('언제 가나?');
     res.status(201).send(video);
   });
 };
