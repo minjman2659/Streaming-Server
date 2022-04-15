@@ -8,7 +8,8 @@ export const uploadVideo = (
   res: Response,
   next: NextFunction,
 ) => {
-  console.log('언제 오나?');
+  const start = performance.now();
+  console.log('시작 : ', start);
   videoUpload(req, res, err => {
     if (err) {
       next(err);
@@ -18,7 +19,9 @@ export const uploadVideo = (
       videoName: res.req.file.filename,
       videoPath: res.req.file.path,
     };
-    console.log('언제 가나?');
+    const end = performance.now();
+    console.log('끝 : ', end);
+    console.log('runtime: ' + (end - start) + 'ms');
     res.status(201).send(video);
   });
 };
