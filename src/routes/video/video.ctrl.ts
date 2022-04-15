@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as url from 'url';
 import * as fs from 'fs';
-import { videoUpload } from 'lib';
+import { multerStorage } from 'lib';
 
 export const uploadVideo = (
   req: Request,
@@ -10,6 +10,9 @@ export const uploadVideo = (
 ) => {
   const start = performance.now();
   console.log('시작 : ', start);
+
+  const videoUpload = multerStorage('video');
+
   videoUpload(req, res, err => {
     if (err) {
       next(err);
@@ -19,9 +22,11 @@ export const uploadVideo = (
       videoName: res.req.file.filename,
       videoPath: res.req.file.path,
     };
+
     const end = performance.now();
     console.log('끝 : ', end);
     console.log('runtime: ' + (end - start) + 'ms');
+
     res.status(201).send(video);
   });
 };
