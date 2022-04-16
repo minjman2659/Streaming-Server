@@ -1,9 +1,9 @@
 import * as express from 'express';
-import { uploadVideo, getVideo } from './video.ctrl';
+import { uploadVideoInLocal, getVideoFromLocal } from './video.ctrl';
 
 const video = express.Router();
 
-video.post('/', uploadVideo);
-video.get('/:videoName', getVideo);
+video.post('/local', uploadVideoInLocal);
+video.get('/local/:videoName', getVideoFromLocal);
 
 export default video;

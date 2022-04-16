@@ -3,7 +3,7 @@ import * as url from 'url';
 import * as fs from 'fs';
 import { multerStorage } from 'lib';
 
-export const uploadVideo = (
+export const uploadVideoInLocal = (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -31,7 +31,11 @@ export const uploadVideo = (
   });
 };
 
-export const getVideo = (req: Request, res: Response, next: NextFunction) => {
+export const getVideoFromLocal = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const { pathname } = url.parse(req.url, true);
   // const { videoName } = req.params;
   const videoPath = `public/videos${pathname}`;
