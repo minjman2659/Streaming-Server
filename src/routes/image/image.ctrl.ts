@@ -28,4 +28,7 @@ export const uploadImageInAws = (
   next: NextFunction,
 ) => {
   res.send(req.file);
+  //* req.file에서
+  //* originalname, mimetype, size, key, location 만 DB에 저장
+  //* ex) 'cat.PNG', 'image/png', '24767', 'image/1650117510593_cat.PNG', 'https://amazon.com/cat.PNG'
 };
