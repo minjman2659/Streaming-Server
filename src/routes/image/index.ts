@@ -1,8 +1,10 @@
 import * as express from 'express';
-import { uploadImage } from './image.ctrl';
+import { awsStorage } from 'lib';
+import { uploadImageInLocal, uploadImageInAws } from './image.ctrl';
 
 const image = express.Router();
 
-image.post('/', uploadImage);
+image.post('/local', uploadImageInLocal);
+image.post('/aws', awsStorage().single('file'), uploadImageInAws);
 
 export default image;

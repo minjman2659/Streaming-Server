@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { multerStorage } from 'lib';
 
-export const uploadImage = (
+export const uploadImageInLocal = (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -20,4 +20,12 @@ export const uploadImage = (
 
     res.status(201).send(image);
   });
+};
+
+export const uploadImageInAws = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  res.send(req.file);
 };
