@@ -3,7 +3,7 @@ import * as multerS3 from 'multer-s3';
 import * as multer from 'multer';
 import { S3, bucketName } from 'config/S3.config';
 
-export const awsStorage = () => {
+export const awsStorageForImage = () => {
   const storage = multer({
     storage: multerS3({
       s3: S3,
@@ -20,6 +20,7 @@ export const awsStorage = () => {
         );
       },
     }),
+    limits: { fileSize: 10 * 1024 * 1024 },
   });
 
   return storage;
