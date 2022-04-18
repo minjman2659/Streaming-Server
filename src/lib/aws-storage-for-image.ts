@@ -11,12 +11,10 @@ export const awsStorageForImage = () => {
       contentType: multerS3.AUTO_CONTENT_TYPE,
       acl: 'public-read',
       key: (req, file, cb) => {
+        const encoded = encodeURI(file.originalname);
         cb(
           null,
-          `image/${Date.now()}_${path.basename(file.originalname)}`.replace(
-            / /g,
-            '',
-          ),
+          `image/${Date.now()}_${path.basename(encoded)}`.replace(/ /g, ''),
         );
       },
     }),
