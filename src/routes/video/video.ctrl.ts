@@ -36,9 +36,9 @@ export const getVideoFromLocal = (
   res: Response,
   next: NextFunction,
 ) => {
-  const { pathname } = url.parse(req.url, true);
-  // const { videoName } = req.params;
-  const videoPath = `public/videos${pathname}`;
+  // const { pathname } = url.parse(req.url, true);
+  const { videoName } = req.params;
+  const videoPath = `public/videos/${videoName}`;
   console.log(videoPath);
   const stat = fs.statSync(videoPath);
   const fileSize = stat.size;
@@ -64,4 +64,18 @@ export const getVideoFromLocal = (
   res.writeHead(206, header);
   const readStream = fs.createReadStream(videoPath, { start, end });
   readStream.pipe(res);
+};
+
+export const uploadVideoInAws = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const options = {
+    partSize: 10 * 1024 * 1024, // 10MB
+    queueSize: 5,
+  };
+
+  console.log(req.file);
+  res.send(req.file);
 };
