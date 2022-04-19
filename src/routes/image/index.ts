@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { awsStorageForImage } from 'lib';
+import { awsStorageForImage } from 'middlewares';
 import { uploadImageInLocal, uploadImageInAws } from './image.ctrl';
 
 const image = express.Router();

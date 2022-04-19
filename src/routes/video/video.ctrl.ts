@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import * as url from 'url';
+// import * as url from 'url';
 import * as fs from 'fs';
-import { multerStorage } from 'lib';
+import { multerStorage, uploadVideoAws } from 'lib';
 
 export const uploadVideoInLocal = (
   req: Request,
@@ -66,16 +66,22 @@ export const getVideoFromLocal = (
   readStream.pipe(res);
 };
 
-export const uploadVideoInAws = (
+export const uploadVideoInAws = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const options = {
-    partSize: 10 * 1024 * 1024, // 10MB
-    queueSize: 5,
-  };
+  const file = req.file.buffer;
+  const fileName = req.file.originalname;
+  try {
+    const video = await uploadVideoAws(file, fileName);
 
-  console.log(req.file);
-  res.send(req.file);
+    const end = performance.now();
+    console.log('끝 : ', end);
+
+    res.status(201).send(video);
+  } catch (err) {
+    next(err);
+    return;
+  }
 };
