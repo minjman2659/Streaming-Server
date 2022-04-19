@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { multerStorage } from 'lib';
+import { multerStorage } from 'middlewares';
 
 export const uploadImageInLocal = (
   req: Request,

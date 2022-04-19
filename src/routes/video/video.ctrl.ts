@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-// import * as url from 'url';
 import * as fs from 'fs';
-import { multerStorage, uploadVideoAws } from 'lib';
+import { multerStorage } from 'middlewares';
+import { uploadVideoAws } from 'lib';
 
 export const uploadVideoInLocal = (
   req: Request,
@@ -36,7 +36,6 @@ export const getVideoFromLocal = (
   res: Response,
   next: NextFunction,
 ) => {
-  // const { pathname } = url.parse(req.url, true);
   const { videoName } = req.params;
   const videoPath = `public/videos/${videoName}`;
   console.log(videoPath);

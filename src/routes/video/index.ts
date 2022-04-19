@@ -15,7 +15,6 @@ const video = express.Router();
 
 video.post('/local', uploadVideoInLocal);
 video.post('/aws', upload.single('file'), uploadVideoInAws);
-
 video.get('/local/:videoName', getVideoFromLocal);
 
 export default video;
