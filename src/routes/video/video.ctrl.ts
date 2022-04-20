@@ -70,17 +70,18 @@ export const uploadVideoInAws = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const file = req.file.buffer;
-  const fileName = req.file.originalname;
-  try {
-    const video = await uploadVideoAws(file, fileName);
+  const { file } = req;
 
-    const end = performance.now();
-    console.log('끝 : ', end);
+  const start = performance.now();
+  console.log('시작 : ', start);
+  
+  const uploadInAws = await uploadVideoAws(file, start, next);
 
-    res.status(201).send(video);
-  } catch (err) {
-    next(err);
-    return;
-  }
+  fs.unlink(file.path, err => {
+    if (err) {
+      next(err);
+      return;
+    }
+    res.send(uploadInAws);
+  });
 };

@@ -1,20 +1,15 @@
 import * as express from 'express';
-import * as multer from 'multer';
+import { multerStorage } from 'middlewares';
 import {
   uploadVideoInLocal,
   getVideoFromLocal,
   uploadVideoInAws,
 } from './video.ctrl';
 
-const { memoryStorage } = multer;
-const storage = memoryStorage();
-
-const upload = multer({ storage });
-
 const video = express.Router();
 
 video.post('/local', uploadVideoInLocal);
-video.post('/aws', upload.single('file'), uploadVideoInAws);
+video.post('/aws', multerStorage('video'), uploadVideoInAws);
 video.get('/local/:videoName', getVideoFromLocal);
 
 export default video;
