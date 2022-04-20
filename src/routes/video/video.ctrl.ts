@@ -74,14 +74,19 @@ export const uploadVideoInAws = async (
 
   const start = performance.now();
   console.log('시작 : ', start);
-  
-  const uploadInAws = await uploadVideoAws(file, start, next);
 
-  fs.unlink(file.path, err => {
-    if (err) {
-      next(err);
-      return;
-    }
-    res.send(uploadInAws);
-  });
+  try {
+    const uploadInAws = await uploadVideoAws(file, start);
+
+    fs.unlink(file.path, err => {
+      if (err) {
+        next(err);
+        return;
+      }
+      res.send(uploadInAws);
+    });
+  } catch (err) {
+    next(err);
+    return;
+  }
 };

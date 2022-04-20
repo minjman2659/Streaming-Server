@@ -1,14 +1,18 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { S3, bucketName } from 'config/S3.config';
-import { NextFunction } from 'express';
 
 export const uploadVideoAws = async (
   file: Express.Multer.File,
   start: number,
-  next: NextFunction,
 ) => {
-  const fileStream = fs.createReadStream(file.path);
+  if (!file) {
+    throw new Error('NO_FILE');
+  }
+
+  if (!fs.existsSync(file.path)) {
+    throw new Error('FILE_NOT_EXIST');
+  }
 
   const encoded = encodeURI(file.originalname);
   const key = `video/${Date.now()}_${path.basename(encoded)}`.replace(/ /g, '');
@@ -26,88 +30,116 @@ export const uploadVideoAws = async (
     //* 1단계: 새로운 멅티파트 업로드를 시작한다는 신호를 S3에 보내기 -> UploadId를 받아온다
     const { UploadId } = await S3.createMultipartUpload(params).promise();
 
-    let multiPartMap: any = {
-      parts: [],
-    };
-    let partNumber = 0;
-    fileStream
-      .on('data', chunk => {
-        partNumber++;
-        fileStream.pause();
-        let partRes = uploadParts(chunk, key, partNumber, UploadId, next);
-        multiPartMap.parts[partNumber] = partRes;
-        fileStream.resume();
-      })
-      .on('end', () => {
-        console.log('done');
-        const complete = completePart(key, multiPartMap, UploadId, next);
-        const end = performance.now();
-        console.log('끝 : ', end);
-        console.log('runtime: ' + (end - start) + 'ms');
-        return complete;
-      });
-  } catch (err) {
-    next(err);
-  }
-};
+    const chunkSize = 10 * 1024 * 1024; // 10MB
+    const readStream = fs.createReadStream(file.path);
 
-function uploadParts(
-  fileBuffer: string | Buffer,
-  key: string,
-  partNumber: number,
-  uploadId: string,
-  next: NextFunction,
-) {
-  const params = {
-    Body: fileBuffer,
-    Bucket: bucketName,
-    Key: key,
-    PartNumber: partNumber,
-    UploadId: uploadId,
-  };
-  return new Promise((resolve, reject) => {
-    try {
-      S3.uploadPart(params, (err: any, data: any) => {
-        if (err) {
-          next(err);
-          return;
+    //* 2단계
+    const uploadPartsPromise = new Promise((resolve, reject) => {
+      const multipartMap: any = { Parts: [] };
+
+      let partNumber = 1;
+      let chunkAccumulator: any = null;
+
+      readStream.on('error', err => {
+        reject(err);
+      });
+
+      readStream.on('data', chunk => {
+        if (!chunkAccumulator) {
+          chunkAccumulator = chunk;
         } else {
-          resolve({
-            ETag: data.ETag,
+          chunkAccumulator = Buffer.concat([chunkAccumulator, chunk]);
+        }
+        if (chunkAccumulator.length > chunkSize) {
+          readStream.pause();
+
+          const chunkMB = chunkAccumulator.length / 1024 / 1024;
+
+          const uploadParams = {
+            Bucket: bucketName,
+            Key: key,
             PartNumber: partNumber,
+            UploadId,
+            Body: chunkAccumulator,
+            ContentLength: chunkAccumulator.length,
+          };
+
+          S3.uploadPart(uploadParams, (err, data) => {
+            if (err) {
+              console.error('ERROR_UPLOADPART');
+              reject(err);
+            } else {
+              console.info(
+                `Data uploaded. Entity tag: ${data.ETag} Part: ${uploadParams.PartNumber} Size: ${chunkMB}`,
+              );
+              multipartMap.Parts.push({
+                ETag: data.ETag,
+                PartNumber: uploadParams.PartNumber,
+              });
+              partNumber++;
+              chunkAccumulator = null;
+              // resume to read the next chunk
+              readStream.resume();
+            }
           });
         }
       });
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
 
-function completePart(
-  key: string,
-  multiPartMap: any,
-  uploadId: string,
-  next: NextFunction,
-) {
-  const params = {
-    Bucket: bucketName,
-    Key: key,
-    MultipartUpload: multiPartMap,
-    UploadId: uploadId,
-  };
-  return new Promise((resolve, reject) => {
-    try {
-      S3.completeMultipartUpload(params, (err, data) => {
-        if (err) {
-          next(err);
-          return;
-        } else {
-          resolve(data);
+      readStream.on('end', () => {
+        console.info('END_STREAM');
+      });
+
+      readStream.on('close', () => {
+        console.info('CLOSE_STREAM');
+        if (chunkAccumulator) {
+          const chunkMB = chunkAccumulator.length / 1024 / 1024;
+          //* upload the last chunk
+          const lastParams = {
+            Bucket: bucketName,
+            Key: key,
+            PartNumber: partNumber,
+            UploadId,
+            Body: chunkAccumulator,
+            ContentLength: chunkAccumulator.length,
+          };
+
+          S3.uploadPart(lastParams, (err, data) => {
+            if (err) {
+              console.error('ERROR_LAST_UPLOADPART');
+              reject(err);
+            } else {
+              console.info(
+                `Last Data uploaded. Entity tag: ${data.ETag} Part: ${lastParams.PartNumber} Size: ${chunkMB}`,
+              );
+              multipartMap.Parts.push({
+                ETag: data.ETag,
+                PartNumber: lastParams.PartNumber,
+              });
+              chunkAccumulator = null;
+              resolve(multipartMap);
+            }
+          });
         }
       });
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
+    });
+
+    const multipartMap = await uploadPartsPromise;
+    console.info(`ALL_PARTS_UPLOADED`);
+
+    //* 3단계
+    const completeParams = {
+      Bucket: bucketName,
+      Key: key,
+      MultipartUpload: multipartMap,
+      UploadId,
+    };
+
+    const complete = await S3.completeMultipartUpload(completeParams).promise();
+    const end = performance.now();
+    console.log('끝 : ', end);
+    console.log('runtime: ' + (end - start) + 'ms');
+    return complete;
+  } catch (err) {
+    throw new Error(err);
+  }
+};
