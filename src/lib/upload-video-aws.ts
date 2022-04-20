@@ -17,7 +17,7 @@ export const uploadVideoAws = async (
   const encoded = encodeURI(file.originalname);
   const key = `video/${Date.now()}_${path.basename(encoded)}`.replace(/ /g, '');
 
-  const params = {
+  const createParams = {
     Key: key,
     Bucket: bucketName,
     ContentType: 'video/mp4',
@@ -28,7 +28,7 @@ export const uploadVideoAws = async (
   //* https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#createMultipartUpload-property  <- 공식문서 참고
   try {
     //* 1단계: 새로운 멅티파트 업로드를 시작한다는 신호를 S3에 보내기 -> UploadId를 받아온다
-    const { UploadId } = await S3.createMultipartUpload(params).promise();
+    const { UploadId } = await S3.createMultipartUpload(createParams).promise();
 
     const chunkSize = 10 * 1024 * 1024; // 10MB
     const readStream = fs.createReadStream(file.path);
@@ -135,9 +135,11 @@ export const uploadVideoAws = async (
     };
 
     const complete = await S3.completeMultipartUpload(completeParams).promise();
+
     const end = performance.now();
     console.log('끝 : ', end);
     console.log('runtime: ' + (end - start) + 'ms');
+
     return complete;
   } catch (err) {
     throw new Error(err);
