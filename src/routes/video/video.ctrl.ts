@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as fs from 'fs';
 import { multerStorage } from 'middlewares';
-import { uploadVideoAws } from 'lib';
+import { multipartUploadToAws } from 'lib';
 
 export const uploadVideoInLocal = (
   req: Request,
@@ -73,19 +73,23 @@ export const uploadVideoInAws = async (
   const { file } = req;
 
   const start = performance.now();
-  console.log('시작 : ', start);
+  console.log('멀티파트 업로드 시작 : ', start);
 
   try {
-    const uploadInAws = await uploadVideoAws(file, start);
+    const uploadedVideoInAws = await multipartUploadToAws(file, start);
 
     fs.unlink(file.path, err => {
       if (err) {
         next(err);
         return;
       }
-      res.send(uploadInAws);
+      res.status(201).send(uploadedVideoInAws);
+      //* 
     });
   } catch (err) {
+    if (fs.existsSync(file.path)) {
+      fs.unlinkSync(file.path);
+    }
     next(err);
     return;
   }

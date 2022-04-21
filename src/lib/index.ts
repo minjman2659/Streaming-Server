@@ -1,3 +1,3 @@
 export * from './file-dir';
 export * from './file-filter';
-export * from './upload-video-aws';
+export * from './multipart-upload-to-aws';
