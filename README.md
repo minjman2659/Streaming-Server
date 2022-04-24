@@ -13,8 +13,8 @@ Streaming-Server by Node.js(Express)
 
 그 전에, 동영상과 같이 대용량 파일을 처리하는데 있어서 꼭 필요한 개념인 <b>Stream</b>에 대해서 사전지식이 필요하기에 아래 글들을 참고하여 이해하고 진행하도록 하자.
 
-*참고1) [Node.js Streams: Everything you need to know](https://www.freecodecamp.org/news/node-js-streams-everything-you-need-to-know-c9141306be93)* <br />
-*참고2) [Stream 사용하기](https://darrengwon.tistory.com/1215)*
+*참고 1) [Node.js Streams: Everything you need to know](https://www.freecodecamp.org/news/node-js-streams-everything-you-need-to-know-c9141306be93)* <br />
+*참고 2) [Stream 사용하기](https://darrengwon.tistory.com/1215)*
 
 <br />
 
