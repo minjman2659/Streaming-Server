@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as fs from 'fs';
+import * as Busboy from 'busboy';
 import { multerStorage } from 'middlewares';
 import { multipartUploadToAws } from 'lib';
 
@@ -70,26 +71,63 @@ export const uploadVideoInAws = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { file } = req;
-
-  const start = performance.now();
-  console.log('멀티파트 업로드 시작 : ', start);
-
   try {
-    const uploadedVideoInAws = await multipartUploadToAws(file, start);
+    const chunks: any[] = [];
+    let uploadName: string, uploadType, uploadEncoding;
+    const busboy = Busboy({ headers: req.headers });
 
-    fs.unlink(file.path, err => {
-      if (err) {
-        next(err);
-        return;
-      }
-      res.status(201).send(uploadedVideoInAws);
-      //* 
+    const localStart = performance.now();
+    console.log('로컬 서버 파이프 시작 : ', localStart);
+    busboy.on('file', (name, file, info) => {
+      const { filename, encoding, mimeType } = info;
+      console.log(
+        `File [${name}]: filename: %j, encoding: %j, mimeType: %j`,
+        filename,
+        encoding,
+        mimeType,
+      );
+      uploadName = filename;
+      uploadType = mimeType;
+      uploadEncoding = encoding;
+
+      file
+        .on('data', data => {
+          // console.info(`File [${name}]: ${data.length} bytes`);
+          // console.info(chunks.length);
+          chunks.push(data);
+        })
+        .on('close', () => {
+          console.info(`File [${name}] 완료`);
+          const localEnd = performance.now();
+          console.log('로컬 서버 파이프 끝 : ', localEnd);
+          console.log('runtime: ' + (localEnd - localStart) + 'ms');
+        })
+        .on('error', err => {
+          console.info(`File [${name}] 에러`);
+          next(err);
+          return;
+        });
     });
+
+    busboy.on('field', (name, val, info) => {
+      console.info(`Field [${name}]: value: %j`, val);
+    });
+
+    busboy.on('finish', async () => {
+      const start = performance.now();
+      console.info('멀티파트 업로드 시작 : ', start);
+
+      const uploadedVideoInAws = await multipartUploadToAws(chunks, uploadName);
+
+      const end = performance.now();
+      console.log('멀티파트 업로드 끝 : ', end);
+      console.log('runtime: ' + (end - start) + 'ms');
+
+      res.status(201).send(uploadedVideoInAws);
+    });
+
+    req.pipe(busboy);
   } catch (err) {
-    if (fs.existsSync(file.path)) {
-      fs.unlinkSync(file.path);
-    }
     next(err);
     return;
   }

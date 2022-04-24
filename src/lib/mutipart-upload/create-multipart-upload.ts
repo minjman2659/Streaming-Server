@@ -16,6 +16,7 @@ export const createMultipartUpload = async (key: string) => {
 
     return { UploadId };
   } catch (err) {
+    console.info('CREATE_MULTIPART_UPLOAD_ERROR');
     throw new Error(err);
   }
 };

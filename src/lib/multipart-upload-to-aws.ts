@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import {
   createMultipartUpload,
@@ -9,18 +8,18 @@ import {
 } from './mutipart-upload';
 
 export const multipartUploadToAws = async (
-  file: Express.Multer.File,
-  start: number,
+  chunks: any[],
+  uploadName: string,
 ) => {
-  if (!file) {
-    throw new Error('NO_FILE');
+  if (!chunks) {
+    throw new Error('NO_CHUNKS');
   }
 
-  if (!fs.existsSync(file.path)) {
-    throw new Error('FILE_NOT_EXIST');
+  if (!uploadName) {
+    throw new Error('NO_UPLOADNAME');
   }
 
-  const encoded = encodeURI(file.originalname);
+  const encoded = encodeURI(uploadName);
   const key = `video/${Date.now()}_${path.basename(encoded)}`.replace(/ /g, '');
 
   //* AWS S3에 대용량 파일을 빠르게 업로드 하기 위해서는 multipart를 이용해야 하는데, 이는 총 3단계에 걸쳐서 업로드를 진행한다.
@@ -38,29 +37,26 @@ export const multipartUploadToAws = async (
     throw new Error(err);
   }
 
-  const chunkSize = 10 * 1024 * 1024; // 10MB
-  const readStream = fs.createReadStream(file.path);
+  const partSize = 10 * 1024 * 1024; // 10MB
+  const stream = Buffer.concat(chunks);
 
-  //? 2단계: S3에 업로드 할 동영상 파일을 chunkSize 만큼 쪼개어 각 개별 파트들을 업로드
-  //* => 각 파트들을 업로드할 때마다 대응되는 Etag와 PartNumber을 받아온다(3단계에서 필요).
+  //? 2단계: S3에 업로드 할 동영상 파일을 partSize 만큼 쪼개어 각 개별 파트들을 업로드
+  //* => 각 파트들을 업로드할 때마다 대응되는 ETag와 PartNumber을 받아온다(3단계에서 필요).
   try {
-    const multipartMap = await uploadPart(chunkSize, readStream, key, uploadId);
+    const { multipartMap } = await uploadPart(partSize, stream, key, uploadId);
     console.info(`ALL_PARTS_UPLOADED`);
 
     //? 3단계: 모든 파트들이 업로드 되었을 때, 이제 하나의 파일로 결합할 수 있음을 S3에 알리기
-    //* => 1단계의 UploadId와 2단계의 각 파트들의 Etag들이 필요하다.
+    //* => 1단계의 UploadId와 2단계의 각 파트들의 ETag들이 필요하다.
     const { completeUpload } = await completeMutipartUpload(
       key,
       multipartMap,
       uploadId,
     );
 
-    const end = performance.now();
-    console.log('멀티파트 업로드 끝 : ', end);
-    console.log('runtime: ' + (end - start) + 'ms');
-
     return completeUpload;
   } catch (err) {
+    console.error(err);
     try {
       //* 2, 3단계에서 파트 업로드 중 에러가 발생했을 경우 파트 업로드를 중단하고,
       //* 현재 진행 중인 파트 업로드가 있는 경우 해당 파트 업로드가 성공하거나 실패할 수 있기 때문에 listParts를 진행하고 난 후,
