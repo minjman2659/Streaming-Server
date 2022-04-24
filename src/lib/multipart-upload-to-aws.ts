@@ -20,7 +20,7 @@ export const multipartUploadToAws = async (
   }
 
   const encoded = encodeURI(uploadName);
-  const key = `video/${Date.now()}_${path.basename(encoded)}`.replace(/ /g, '');
+  const key = `input/${Date.now()}_${path.basename(encoded)}`.replace(/ /g, '');
 
   //* AWS S3에 대용량 파일을 빠르게 업로드 하기 위해서는 multipart를 이용해야 하는데, 이는 총 3단계에 걸쳐서 업로드를 진행한다.
   //* 대용량 동영상 파일을 작고 관리하기 쉬운 청크로 쪼개어 개별적으로 업로드한 후, 모든 파트들이 업로드 되었다면 S3에서 각 파트들을 합쳐 하나의 파일로 결합해 저장될 수 있다.
