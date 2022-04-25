@@ -98,3 +98,9 @@ AWS-S3에 동영상 파일이 성공적으로 저장되었다면, 다음으로 �
 ## 3. CloudFront로 동영상 파일 스트리밍 하기
 마지막 단계는 변환한 동영상 파일을 CloudFront 서비스를 이용해서 최종 사용자에게 제공 해야한다. 사용자는 변환된 동영상 덕분에 모든 디바이스에서 언제든지 동영상 콘텐츠를 감상할 수 있게 된다.
 
+CloudFront 서비스를 활용해서 동영상을 제공하는 것의 장점은 다음과 같다.
+
+- 캐싱을 통해 사용자에게 동영상 파일 제공하는데 지연 시간을 최소화 할 수 있고, 더 빠른 응답을 지원할 수 있다.
+- CloudFront 서명 URL을 활용한다면, 무단 엑세스를 방지하고 애플리케이션 외부에서 재생할 수 없도록 동영상 콘텐츠를 보호할 수 있다.
+
+*출처) [Amazon CloudFront란 무엇입니까?](https://docs.aws.amazon.com/ko_kr/AmazonCloudFront/latest/DeveloperGuide/Introduction.html)*
