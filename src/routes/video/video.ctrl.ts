@@ -73,7 +73,7 @@ export const uploadVideoInAws = async (
 ) => {
   try {
     const chunks: any[] = [];
-    let uploadName: string, uploadType, uploadEncoding;
+    let uploadName: string, uploadType: string, uploadEncoding: string;
     const busboy = Busboy({ headers: req.headers });
 
     const localStart = performance.now();
@@ -89,6 +89,10 @@ export const uploadVideoInAws = async (
       uploadName = filename;
       uploadType = mimeType;
       uploadEncoding = encoding;
+
+      if (uploadType !== 'video/mp4') {
+        throw new Error('ONLY_VIDEO_MP4_UPLOADABLE');
+      }
 
       file
         .on('data', data => {
