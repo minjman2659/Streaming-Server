@@ -115,7 +115,7 @@ CloudFront와 S3를 연결시켰다면, 이제 MediaConvert로 변환된 HLS 동
 <br />
 
 ## # 기타
-만약 비용적인 부분에서 자유롭고 더 편리하게 동영상 서비스를 구현하고 싶다면 비디오와 관련된 각종 REST API를 제공하는 비디오 관리 유료 툴을 사용하는 것도 좋은 대안이 될 수 있다.
+만약 비용적인 부분에서 큰 부담이 없고, 더 편리하게 동영상 서비스를 구현하고 싶다면 비디오와 관련된 각종 REST API를 제공하는 비디오 관리 유료 툴을 사용하는 것도 좋은 선택이 될 수 있다.
 
 *참고 1) [WECANDEO](https://www.wecandeo.com/product/videopack)* <br />
 *참고 2) [WECANDEO OPEN API](https://support.wecandeo.com/reference/videopack-api-getting-started)*
