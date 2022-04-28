@@ -107,7 +107,8 @@ CloudFront 서비스를 활용해서 동영상을 제공하는 것의 장점은 
 
 CloudFront와 S3를 연결시켰다면, 이제 MediaConvert로 변환된 HLS 동영상 파일을 재생시킬 웹페이지가 만들어져야 한다. 그런데 HLS는 Apple 기기 위주로 만든 방식이라 크롬에서 재생이 안된다. 그래서 AWS에서는 **Video.js**, **Google Shaka Player**, **hls.js** 를 활용하라고 한다.
 
-*출처) [HLS를 사용한 비디오 재생](https://docs.aws.amazon.com/ko_kr/kinesisvideostreams/latest/dg/hls-playback.html)*
+*출처) [HLS를 사용한 비디오 재생](https://docs.aws.amazon.com/ko_kr/kinesisvideostreams/latest/dg/hls-playback.html)* <br />
+*출처) [HTTP 라이브 스트리밍이란 무엇입니까? | HLS 스트리밍](https://www.cloudflare.com/ko-kr/learning/video/what-is-http-live-streaming/)*
 
 보편적으로 video.js를 가장 많이 사용하는 것 같으니, [공식 문서](https://videojs.com/getting-started/)를 참고해서 코드를 작성하면 되겠다. <br />
 (만약 동영상을 스트리밍하는데 에러가 발생한다면, CORS 에러일 확률이 높으니 AWS의 S3와 CloudFront에서 CORS 설정을 진행하면 해결 가능하다)
